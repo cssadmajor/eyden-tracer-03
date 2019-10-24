@@ -1,5 +1,5 @@
 #include "Scene.h"
-
+#include "Scene.cpp"
 #include "CameraPerspective.h"
 
 #include "PrimSphere.h"

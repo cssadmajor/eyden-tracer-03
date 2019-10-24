@@ -1,7 +1,7 @@
 #pragma once
 
 #include "types.h"
-
+#include "ray.h"
 struct Ray;
 
 namespace {
@@ -41,6 +41,8 @@ public:
 	void extend(Vec3f a)
 	{
 		// --- PUT YOUR CODE HERE ---
+		//this->extend(box.m_min);
+		//this->extend(box.m_max);
 	}
 	
 	/**
@@ -59,7 +61,13 @@ public:
 	bool overlaps(const CBoundingBox& box)
 	{
 		// --- PUT YOUR CODE HERE ---
-		return true;
+		bool val = (this->m_min[0] < box.m_max[0] && 
+			box.m_min[0] < this->m_max[0] && this->m_min[1] < box.m_max[1] && 
+				box.m_min[1] < this->m_max[1] && this->m_min[2] < box.m_max[2] 
+					&& box.m_min[2] < this->m_max[2]);
+		return val;
+	
+		//return true;
 	}
 	
 	/**
@@ -68,9 +76,65 @@ public:
 	 * @param[in,out] t0 The distance from ray origin at which the ray enters the bounding box
 	 * @param[in,out] t1 The distance from ray origin at which the ray leaves the bounding box
 	 */
+
+	//Implementation of Slab's Algorithm
+	//Reference: 
+	//https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-box-intersection
 	void clip(const Ray& ray, float& t0, float& t1)
 	{
 		// --- PUT YOUR CODE HERE ---
+		int i = 0;
+		Vec3f tymin;
+		Vec3f tymax;
+		float tmin = (-1) * std::numeric_limits<float>::infinity();
+		float tmax = std::numeric_limits<float>::infinity();
+		for (int i =0; i<3; ++i)
+		{
+
+			if (ray.dir[i] != 0)
+			{
+				tymin[i] = (this->m_min[i] - ray.org[i]) / ray.dir[i];
+				tymax[i] = (this->m_max[i] - ray.org[i]) / ray.dir[i];
+
+				if (tymin[i] > tymax[i])
+				{
+					Vec3f temp;
+					temp = tymax;
+					tymax = tymin;
+					tymin = temp;
+				}
+
+				if (tymin[i] > tmin)
+				{
+					tmin = tymin[i];
+				}
+
+				if (tymax[i] < tmax)
+				{
+					tmax = tymax[i];
+				}
+
+				if ((tmin > tmax) || (tmax < 0))
+				{
+					t0 = std::numeric_limits<float>::infinity();
+					t1 = std::numeric_limits<float>::infinity();
+					return;
+				}
+			}
+			else
+			{		
+				if ((ray.org[i] < this->m_min[i]) || (ray.org[i] > this->m_max[i]))
+				{
+					t0 = std::numeric_limits<float>::infinity();
+					t1 = std::numeric_limits<float>::infinity();
+					return;
+				}
+			}
+
+		}
+		t0 = tmin;
+		t1 = tmax;
+		
 	}
 	
 	
